@@ -3,7 +3,7 @@ Aplikasi ini dibuat untuk melatih pemahaman praktek membuat WEB API dengan bahas
 Berikut beberapa operasi yang bisa dilakukan pada aplikasi ini, yaitu:
 
 1. Mendapatkan semua daftar product
-2. Mendapatkan detail detail product
+2. Mendapatkan detail product
 3. Membuat product
 4. Memperbaharui product
 5. Menghapus product
@@ -17,16 +17,10 @@ _____
     authorization: basic <credential>
     ```
 
-   response header
-    ```http response
-   Content-Type: application/json
-    ```
-   response body
+   response (**success**)
    ```response
    {
-      "status": "OK",
-      "code": 200,
-      "message": "success",
+      "status": "success",
       "data": [
          {
             "id": "product001",
@@ -40,18 +34,17 @@ _____
             "price": 7899000,
             "quantity": 1
          }
-      ],
-      "error": nil
+      ]
    }
    ```
    
-   response body (**error**)
+   response (**error**)
    ```response
    {
-      "timestamp": "03-agustus-2024 15:41:00",
-      "status": "401 unauthorized",
-      "message": "creadential not valid",
-      "subErrors": nil
+      "status": "error",
+      "errors": nil,
+      "trace_id": "",
+      "documentation_url": ""
    }
    ```
 ___
@@ -63,33 +56,26 @@ ___
     authorization: basic <credential>
     ```
 
-   response header
-    ```http response
-   Content-Type: application/json
-    ```
-   response body
+   response (**success**)
    ```response
    {
-      "status": "OK",
-      "code": 200,
-      "message": "success",
+      "status": "success",
       "data": {
             "id": "product001",
             "item": "Laptop Acer Swift Go 14",
             "price": 8799000,
             "quantity": 1
-      },
-      "error": nil
+      }
    }
    ```
 
-   response body (**error**) http.method (404, 401)
+   response (**error**)
    ```response
    {
-      "timestamp": "03-agustus-2024 15:41:00",
-      "status": "404 not found",
-      "message": "product is not found",
-      "subErrors": nil
+      "status": "error",
+      "errors": nil,
+      "trace_id": "",
+      "documentation_url": ""
    }
    ```
 ___
@@ -112,42 +98,29 @@ ___
    }
    ```
 
-   response header
-   ```http response
-   Content-Type: application/json
-   ```
-   response body
+   response (**success**)
    ```response
    {
-      "status": "Created",
-      "code": 201,
-      "message": "success",
+      "status": "success",
       "data": {
             "id": "product001",
             "item": "Laptop Acer Swift Go 14",
             "price": 8799000,
             "quantity": 1
-      },
-      "error": nil
+      }
    }
    ```
 
-   response body (**error**) http.method (400, 401)
+   response (**error**)
    ```response
    {
-      "timestamp": "03-agustus-2024 15:41:00",
-      "status": "400 bad request",
-      "message": "validation error",
-      "subErrors": [
-         {
-            "field": "item",
-            "message": "item must be require"
-         },
-         {
-            "field": "quantity",
-            "message": "quantity minimum greater than 0"
-         }
-      ]
+      "status": "error",
+      "error": {
+         "item": ["TO_LONG"],
+         "price": ["NUMBER_FORMAT", "MINIMUM 1"]
+      },
+      "trace_id": "",
+      "documentation_url": ""
    }
    ```
    
@@ -168,33 +141,27 @@ ___
        "quantity": 1
    }
    ```
-   response header
-   ```http response
-   Content-Type: application/json
-   ```
-   response body
+
+   response (**success**)
    ```response
    {
-      "status": "OK",
-      "code": 200,
-      "message": "success",
+      "status": "success",
       "data": {
             "id": "product001",
             "item": "Laptop Acer Swift Go 14",
             "price": 8000000,
             "quantity": 1
-      },
-      "error": nil
+      }
    }
    ```
 
-   response body (**error**) http.method (404, 401, 400)
+   response (**error**)
    ```response
    {
-      "timestamp": "03-agustus-2024 15:41:00",
-      "status": "404 not found",
-      "message": "id not found",
-      "subErrors": nil
+      "status": "error",
+      "error": nil,
+      "trace_id": "",
+      "documentation_url": ""
    }
    ```
 
@@ -207,12 +174,20 @@ ___
     authorization: basic <credential>
     ```
 
-   response body
+   response (**success**)
    ```response
    {
-      "status": "OK",
-      "code": 200,
-      "message": "success",
-      "data": nil,
-      "error": nil
+      "status": "success",
+      "data": nil
    }
+   ```
+   
+   response (**error**)
+   ```response
+   {
+      "status": "error",
+      "error": nil,
+      "trace_id": "",
+      "documentation_url": ""
+   }
+   ```
