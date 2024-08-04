@@ -42,7 +42,7 @@ _____
    ```response
    {
       "status": "error",
-      "errors": nil,
+      "errors": null,
       "trace_id": "",
       "documentation_url": ""
    }
@@ -73,7 +73,7 @@ ___
    ```response
    {
       "status": "error",
-      "errors": nil,
+      "errors": null,
       "trace_id": "",
       "documentation_url": ""
    }
@@ -91,7 +91,6 @@ ___
    request body
    ```request
    {
-       "id": "product001",
        "item": "Laptop Acer Swift Go 14",
        "price": 8799000,
        "quantity": 1
@@ -159,7 +158,7 @@ ___
    ```response
    {
       "status": "error",
-      "error": nil,
+      "error": null,
       "trace_id": "",
       "documentation_url": ""
    }
@@ -167,7 +166,7 @@ ___
 
 ___
 
-5. **DELETE** ``http://localhost:3000/api/orders/:id``
+5. **DELETE** ``http://localhost:3000/api/products/:id``
 
    request header
     ```http request
@@ -178,7 +177,7 @@ ___
    ```response
    {
       "status": "success",
-      "data": nil
+      "data": null
    }
    ```
    
