@@ -6,7 +6,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/mrizkisaputra/golang-restfull-starter/cmd/model/dto"
 	. "github.com/mrizkisaputra/golang-restfull-starter/cmd/services"
-	"github.com/mrizkisaputra/golang-restfull-starter/utils"
+	. "github.com/mrizkisaputra/golang-restfull-starter/utils"
 	"net/http"
 )
 
@@ -22,21 +22,26 @@ func NewProductController(productService ProductServiceInterface, ctx context.Co
 	}
 }
 
-func buildResponseEntity(products []dto.ProductResponseBody) dto.WebApiResponseSuccess {
-	return dto.WebApiResponseSuccess{
-		Status: "Success",
-		Data:   products,
-	}
+func (services *productController) writeToResponseBody(writer http.ResponseWriter, webApiResponse dto.WebApiResponseSuccess, httpStatusCode int) {
+	writer.WriteHeader(httpStatusCode)
+	writer.Header().Set("Content-Type", "application/json charset=UTF-8")
+	err := json.NewEncoder(writer).Encode(&webApiResponse)
+	PanicIfError(err)
+}
+
+func (services *productController) readFromRequestBody(request *http.Request, requestBody *dto.ProductRequestBody) {
+	decode := json.NewDecoder(request.Body)
+	errDecoded := decode.Decode(requestBody)
+	PanicIfError(errDecoded)
 }
 
 func (services *productController) GetProductsHandler(writer http.ResponseWriter, request *http.Request, param httprouter.Params) {
 	products := services.productService.GetAllProduct(services.context)
-	webApiResponseSuccess := buildResponseEntity(products)
-	encode := json.NewEncoder(writer)
-	err := encode.Encode(webApiResponseSuccess)
-	utils.PanicIfError(err)
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusOK)
+	webApiResponseSuccess := dto.WebApiResponseSuccess{
+		Status: "success",
+		Data:   products,
+	}
+	services.writeToResponseBody(writer, webApiResponseSuccess, http.StatusOK)
 }
 
 func (services *productController) GetProductByIdHandler(writer http.ResponseWriter, request *http.Request, param httprouter.Params) {
@@ -45,14 +50,11 @@ func (services *productController) GetProductByIdHandler(writer http.ResponseWri
 		Id: productId,
 	}
 	product := services.productService.GetProductById(services.context, requestParam)
-	var response []dto.ProductResponseBody
-	response = append(response, product)
-	webApiResponseSuccess := buildResponseEntity(response)
-	encode := json.NewEncoder(writer)
-	err := encode.Encode(webApiResponseSuccess)
-	utils.PanicIfError(err)
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusOK)
+	webApiResponseSuccess := dto.WebApiResponseSuccess{
+		Status: "success",
+		Data:   product,
+	}
+	services.writeToResponseBody(writer, webApiResponseSuccess, http.StatusOK)
 }
 
 func (services *productController) AddProductHandler(writer http.ResponseWriter, request *http.Request, param httprouter.Params) {
@@ -60,48 +62,39 @@ func (services *productController) AddProductHandler(writer http.ResponseWriter,
 		writer.WriteHeader(http.StatusUnsupportedMediaType)
 	}
 
-	// decode reqest json
-	var requestBody = dto.ProductRequestBody{}
-	decode := json.NewDecoder(request.Body)
-	errDecoded := decode.Decode(&requestBody)
-	utils.PanicIfError(errDecoded)
+	var productRequestBody = dto.ProductRequestBody{}
+	services.readFromRequestBody(request, &productRequestBody)
 
-	product := services.productService.AddProduct(services.context, requestBody)
-	var response []dto.ProductResponseBody
-	response = append(response, product)
-	webApiResponseSuccess := buildResponseEntity(response)
-	errEncoded := json.NewEncoder(writer).Encode(webApiResponseSuccess)
-	utils.PanicIfError(errEncoded)
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusCreated)
+	product := services.productService.AddProduct(services.context, productRequestBody)
+	webApiResponseSuccess := dto.WebApiResponseSuccess{
+		Status: "success",
+		Data:   product,
+	}
+	services.writeToResponseBody(writer, webApiResponseSuccess, http.StatusCreated)
 }
 
 func (services *productController) UpdateProductHandler(writer http.ResponseWriter, request *http.Request, param httprouter.Params) {
 	id := param.ByName("id")
 	var productRequestParam = dto.ProductRequestParam{Id: id}
 	var productRequestBody = dto.ProductRequestBody{}
-	errDecoded := json.NewDecoder(request.Body).Decode(&productRequestBody)
-	utils.PanicIfError(errDecoded)
+
+	services.readFromRequestBody(request, &productRequestBody)
 
 	product := services.productService.UpdateProduct(services.context, productRequestBody, productRequestParam)
-	var response []dto.ProductResponseBody
-	response = append(response, product)
-
-	webApiResponseSuccess := buildResponseEntity(response)
-	encode := json.NewEncoder(writer)
-	errEncoded := encode.Encode(webApiResponseSuccess)
-	utils.PanicIfError(errEncoded)
-
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusAccepted)
+	webApiResponseSuccess := dto.WebApiResponseSuccess{
+		Status: "success",
+		Data:   product,
+	}
+	services.writeToResponseBody(writer, webApiResponseSuccess, http.StatusAccepted)
 }
 
 func (services *productController) RemoveProductHandler(writer http.ResponseWriter, request *http.Request, param httprouter.Params) {
 	id := param.ByName("id")
 	productRequestParam := dto.ProductRequestParam{Id: id}
 	services.productService.RemoveProduct(services.context, productRequestParam)
-	err := json.NewEncoder(writer).Encode(buildResponseEntity(nil))
-	utils.PanicIfError(err)
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusOK)
+	webApiResponseSuccess := dto.WebApiResponseSuccess{
+		Status: "success",
+		Data:   nil,
+	}
+	services.writeToResponseBody(writer, webApiResponseSuccess, http.StatusOK)
 }

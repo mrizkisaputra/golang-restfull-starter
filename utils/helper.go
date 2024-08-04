@@ -1,6 +1,8 @@
 package utils
 
-import "database/sql"
+import (
+	"database/sql"
+)
 
 var (
 	ProductFindAllSQL  = "SELECT id, item, price, quantity FROM products"
