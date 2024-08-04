@@ -59,6 +59,8 @@ func (services *productController) AddProductHandler(writer http.ResponseWriter,
 	if content := request.Header.Get("Content-Type"); content != "application/json" {
 		writer.WriteHeader(http.StatusUnsupportedMediaType)
 	}
+
+	// decode reqest json
 	var requestBody = dto.ProductRequestBody{}
 	decode := json.NewDecoder(request.Body)
 	errDecoded := decode.Decode(&requestBody)
@@ -96,7 +98,7 @@ func (services *productController) UpdateProductHandler(writer http.ResponseWrit
 
 func (services *productController) RemoveProductHandler(writer http.ResponseWriter, request *http.Request, param httprouter.Params) {
 	id := param.ByName("id")
-	productRequestParam := dto.ProductRequestParam{ Id: id }
+	productRequestParam := dto.ProductRequestParam{Id: id}
 	services.productService.RemoveProduct(services.context, productRequestParam)
 	err := json.NewEncoder(writer).Encode(buildResponseEntity(nil))
 	utils.PanicIfError(err)
