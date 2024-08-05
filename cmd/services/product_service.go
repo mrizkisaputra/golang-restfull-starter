@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
+	"github.com/mrizkisaputra/golang-restfull-starter/cmd/exceptions"
 	"github.com/mrizkisaputra/golang-restfull-starter/cmd/model/dto"
 	. "github.com/mrizkisaputra/golang-restfull-starter/cmd/model/entities"
 	. "github.com/mrizkisaputra/golang-restfull-starter/cmd/repositories"
@@ -34,21 +35,9 @@ func toProductResponseBody(product Product) dto.ProductResponseBody {
 	}
 }
 
-func validate(validateError error) {
-	if validateError != nil {
-		// error ini terjadi ketika ada masalah dengan cara validasi dilakukan, bukan dengan data yang divalidasi itu sendiri
-		invalidValidationError := validateError.(*validator.InvalidValidationError)
-		utils.PanicIfError(invalidValidationError)
-
-		// error ini terjadi ketika ada masalah karena validasi data yang gagal
-		var validationErrors = validateError.(validator.ValidationErrors)
-		utils.PanicIfError(validationErrors)
-	}
-}
-
 func (service *productService) GetAllProduct(ctx context.Context) []dto.ProductResponseBody {
 	tx, err := service.db.Begin()
-	utils.PanicIfError(err)
+	exceptions.ErrorInternal(err)
 	defer utils.RollbackIfPanic(tx)
 	products := service.productRepository.FindAll(ctx, tx)
 
@@ -61,29 +50,30 @@ func (service *productService) GetAllProduct(ctx context.Context) []dto.ProductR
 }
 
 func (service *productService) GetProductById(ctx context.Context, param dto.ProductRequestParam) dto.ProductResponseBody {
-	tx, err := service.db.Begin()
-	utils.PanicIfError(err)
-	defer utils.RollbackIfPanic(tx)
-
 	// validate request parameter
 	validateParamError := service.validate.Struct(&param)
-	validate(validateParamError)
+	utils.PanicIfError(validateParamError)
+
+	tx, err := service.db.Begin()
+	exceptions.ErrorInternal(err)
+	defer utils.RollbackIfPanic(tx)
+
 	product, err := service.productRepository.FindById(ctx, tx, param.Id)
 	utils.PanicIfError(err)
 	return toProductResponseBody(product)
 }
 
 func (service *productService) AddProduct(ctx context.Context, body dto.ProductRequestBody) dto.ProductResponseBody {
-	tx, err := service.db.Begin()
-	utils.PanicIfError(err)
-	defer utils.RollbackIfPanic(tx)
-
 	// validate request payload body
 	validateBodyError := service.validate.Struct(&body)
-	validate(validateBodyError)
+	utils.PanicIfError(validateBodyError)
+
+	tx, err := service.db.Begin()
+	exceptions.ErrorInternal(err)
+	defer utils.RollbackIfPanic(tx)
 
 	random, err := uuid.NewRandom()
-	utils.PanicIfError(err)
+	exceptions.ErrorInternal(err)
 	var product Product = Product{
 		Id:       random.String(),
 		Item:     body.Item,
@@ -95,17 +85,17 @@ func (service *productService) AddProduct(ctx context.Context, body dto.ProductR
 }
 
 func (service *productService) UpdateProduct(ctx context.Context, body dto.ProductRequestBody, param dto.ProductRequestParam) dto.ProductResponseBody {
-	tx, err := service.db.Begin()
-	utils.PanicIfError(err)
-	defer utils.RollbackIfPanic(tx)
-
 	// validate request payload body
 	validateBodyError := service.validate.Struct(&body)
-	validate(validateBodyError)
+	utils.PanicIfError(validateBodyError)
 
 	// validate request parameter
 	validateParamError := service.validate.Struct(&param)
-	validate(validateParamError)
+	utils.PanicIfError(validateParamError)
+
+	tx, err := service.db.Begin()
+	exceptions.ErrorInternal(err)
+	defer utils.RollbackIfPanic(tx)
 
 	product, err := service.productRepository.FindById(ctx, tx, param.Id)
 	utils.PanicIfError(err)
@@ -118,13 +108,13 @@ func (service *productService) UpdateProduct(ctx context.Context, body dto.Produ
 }
 
 func (service *productService) RemoveProduct(ctx context.Context, param dto.ProductRequestParam) {
-	tx, err := service.db.Begin()
-	utils.PanicIfError(err)
-	defer utils.RollbackIfPanic(tx)
-
 	// validate request parameter
 	validateParamError := service.validate.Struct(&param)
-	validate(validateParamError)
+	utils.PanicIfError(validateParamError)
+
+	tx, err := service.db.Begin()
+	exceptions.ErrorInternal(err)
+	defer utils.RollbackIfPanic(tx)
 
 	errDelete := service.productRepository.Delete(ctx, tx, param.Id)
 	utils.PanicIfError(errDelete)

@@ -1,5 +1,5 @@
 package dto
 
 type ProductRequestParam struct {
-	Id string `validate:"required"`
+	Id string `validate:"min=10"`
 }

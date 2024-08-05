@@ -14,10 +14,11 @@ import (
 var db = config.GetConnectDB()
 
 func main() {
+	webApiErrorController := controllers.NewWebApiErrorController()
 	productRepository := repositories.NewProductRepository()
 	productService := services.NewProductService(productRepository, db)
 	productController := controllers.NewProductController(productService, context.Background())
-	productHttpRouter := router.NewProductHttpRouter(productRepository, productService, productController)
+	productHttpRouter := router.NewProductHttpRouter(productRepository, productService, productController, webApiErrorController)
 	route := productHttpRouter.GetRoute()
 
 	server := http.Server{

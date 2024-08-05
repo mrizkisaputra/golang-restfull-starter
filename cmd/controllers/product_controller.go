@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/julienschmidt/httprouter"
+	"github.com/mrizkisaputra/golang-restfull-starter/cmd/exceptions"
 	"github.com/mrizkisaputra/golang-restfull-starter/cmd/model/dto"
 	. "github.com/mrizkisaputra/golang-restfull-starter/cmd/services"
-	. "github.com/mrizkisaputra/golang-restfull-starter/utils"
+	"github.com/mrizkisaputra/golang-restfull-starter/utils"
 	"net/http"
 )
 
@@ -26,13 +27,13 @@ func (services *productController) writeToResponseBody(writer http.ResponseWrite
 	writer.WriteHeader(httpStatusCode)
 	writer.Header().Set("Content-Type", "application/json charset=UTF-8")
 	err := json.NewEncoder(writer).Encode(&webApiResponse)
-	PanicIfError(err)
+	exceptions.ErrorInternal(err)
 }
 
 func (services *productController) readFromRequestBody(request *http.Request, requestBody *dto.ProductRequestBody) {
 	decode := json.NewDecoder(request.Body)
 	errDecoded := decode.Decode(requestBody)
-	PanicIfError(errDecoded)
+	exceptions.ErrorInternal(errDecoded)
 }
 
 func (services *productController) GetProductsHandler(writer http.ResponseWriter, request *http.Request, param httprouter.Params) {
@@ -60,12 +61,13 @@ func (services *productController) GetProductByIdHandler(writer http.ResponseWri
 func (services *productController) AddProductHandler(writer http.ResponseWriter, request *http.Request, param httprouter.Params) {
 	if content := request.Header.Get("Content-Type"); content != "application/json" {
 		writer.WriteHeader(http.StatusUnsupportedMediaType)
+		utils.PanicIfError(exceptions.NewBadRequestError("UNSUPPORTED CONTENT_TYPE"))
 	}
 
 	var productRequestBody = dto.ProductRequestBody{}
 	services.readFromRequestBody(request, &productRequestBody)
-
 	product := services.productService.AddProduct(services.context, productRequestBody)
+
 	webApiResponseSuccess := dto.WebApiResponseSuccess{
 		Status: "success",
 		Data:   product,

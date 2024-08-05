@@ -1,0 +1,14 @@
+#GET http://localhost:3000/api/products/6d8aceea-ae63-484f-b41b-022c15b49983
+
+
+#GET http://localhost:3000/api/products
+
+POST http://localhost:3000/api/product
+
+{
+    "item": "TESTING TESTING",
+    "price": 0,
+    "quantity":
+}
+
+#DELETE http://localhost:3000/api/products/6d8aceea-ae63-484f-b41b-022c15b49983
