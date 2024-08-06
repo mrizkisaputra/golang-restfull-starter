@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/mrizkisaputra/golang-restfull-starter/cmd/auth"
 	"github.com/mrizkisaputra/golang-restfull-starter/cmd/controllers"
 	"github.com/mrizkisaputra/golang-restfull-starter/cmd/repositories"
 	"github.com/mrizkisaputra/golang-restfull-starter/cmd/router"
@@ -21,9 +22,11 @@ func main() {
 	productHttpRouter := router.NewProductHttpRouter(productRepository, productService, productController, webApiErrorController)
 	route := productHttpRouter.GetRoute()
 
+	authMiddleware := auth.NewAuthMiddleware(route)
+
 	server := http.Server{
 		Addr:    "localhost:3000",
-		Handler: route,
+		Handler: authMiddleware,
 	}
 	err := server.ListenAndServe()
 	utils.PanicIfError(err)
