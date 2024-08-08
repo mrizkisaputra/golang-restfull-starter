@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	. "github.com/mrizkisaputra/golang-restfull-starter/utils"
 	"github.com/spf13/viper"
 )
 
@@ -16,9 +15,11 @@ func init() {
 	v.AddConfigPath("./config")
 }
 
-func GetConnectDB() *sql.DB {
+func GetConnectDB() (*sql.DB, error) {
 	err := v.ReadInConfig()
-	PanicIfError(err)
+	if err != nil {
+		return nil, err
+	}
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
 		v.GetString("DB_USERNAME"),
 		v.GetString("DB_PASSWORD"),
@@ -27,6 +28,8 @@ func GetConnectDB() *sql.DB {
 		v.GetString("DB_NAME"))
 
 	db, err := sql.Open("mysql", dsn)
-	PanicIfError(err)
-	return db
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
 }

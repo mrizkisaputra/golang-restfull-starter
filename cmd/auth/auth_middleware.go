@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/julienschmidt/httprouter"
 	"github.com/mrizkisaputra/golang-restfull-starter/cmd/model/dto"
-	"github.com/mrizkisaputra/golang-restfull-starter/utils"
+	"github.com/mrizkisaputra/golang-restfull-starter/helper"
 	"net/http"
 )
 
@@ -29,7 +29,7 @@ func (authMiddleware AuthMiddleware) ServeHTTP(writer http.ResponseWriter, reque
 		}
 		writer.WriteHeader(http.StatusBadRequest)
 		err := json.NewEncoder(writer).Encode(webApiResponseError)
-		utils.PanicIfError(err)
+		helper.PanicIfError(err)
 		return
 	}
 
@@ -41,7 +41,7 @@ func (authMiddleware AuthMiddleware) ServeHTTP(writer http.ResponseWriter, reque
 		}
 		writer.WriteHeader(http.StatusUnauthorized)
 		err := json.NewEncoder(writer).Encode(webApiResponseError)
-		utils.PanicIfError(err)
+		helper.PanicIfError(err)
 		return
 	}
 

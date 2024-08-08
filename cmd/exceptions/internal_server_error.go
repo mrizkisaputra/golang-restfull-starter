@@ -16,6 +16,6 @@ func NewInternalServerError(message string) InternalServerError {
 
 func ErrorInternal(err error) {
 	if err != nil {
-		panic(NewInternalServerError(fmt.Sprintf("Internal Server Error: %s", err.Error())))
+		panic(NewInternalServerError(fmt.Sprintf("Internal Server Error")))
 	}
 }

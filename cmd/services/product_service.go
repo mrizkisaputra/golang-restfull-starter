@@ -9,20 +9,23 @@ import (
 	"github.com/mrizkisaputra/golang-restfull-starter/cmd/model/dto"
 	. "github.com/mrizkisaputra/golang-restfull-starter/cmd/model/entities"
 	. "github.com/mrizkisaputra/golang-restfull-starter/cmd/repositories"
-	"github.com/mrizkisaputra/golang-restfull-starter/utils"
+	"github.com/mrizkisaputra/golang-restfull-starter/helper"
+	"github.com/sirupsen/logrus"
 )
 
 type productService struct {
 	productRepository ProductRepositoryInterface
 	db                *sql.DB
 	validate          *validator.Validate
+	Log               *logrus.Logger
 }
 
-func NewProductService(repository ProductRepositoryInterface, db *sql.DB) ProductServiceInterface {
+func NewProductService(repository ProductRepositoryInterface, db *sql.DB, log *logrus.Logger) ProductServiceInterface {
 	return &productService{
 		productRepository: repository,
 		db:                db,
 		validate:          validator.New(validator.WithRequiredStructEnabled()),
+		Log:               log,
 	}
 }
 
@@ -37,8 +40,13 @@ func toProductResponseBody(product Product) dto.ProductResponseBody {
 
 func (service *productService) GetAllProduct(ctx context.Context) []dto.ProductResponseBody {
 	tx, err := service.db.Begin()
-	exceptions.ErrorInternal(err)
-	defer utils.RollbackIfPanic(tx)
+	if err != nil {
+		service.Log.WithFields(logrus.Fields{
+			"layer": "services/product_service/GetAllProduct()",
+		}).Errorf("error because : %v", err.Error())
+		exceptions.ErrorInternal(err)
+	}
+	defer helper.RollbackIfPanic(tx)
 	products := service.productRepository.FindAll(ctx, tx)
 
 	var productResponseBody []dto.ProductResponseBody
@@ -52,25 +60,28 @@ func (service *productService) GetAllProduct(ctx context.Context) []dto.ProductR
 func (service *productService) GetProductById(ctx context.Context, param dto.ProductRequestParam) dto.ProductResponseBody {
 	// validate request parameter
 	validateParamError := service.validate.Struct(&param)
-	utils.PanicIfError(validateParamError)
+	if validateParamError != nil {
+		service.Log.Errorf("error validation request param : %v", validateParamError.Error())
+		helper.PanicIfError(validateParamError)
+	}
 
 	tx, err := service.db.Begin()
 	exceptions.ErrorInternal(err)
-	defer utils.RollbackIfPanic(tx)
+	defer helper.RollbackIfPanic(tx)
 
 	product, err := service.productRepository.FindById(ctx, tx, param.Id)
-	utils.PanicIfError(err)
+	helper.PanicIfError(err)
 	return toProductResponseBody(product)
 }
 
 func (service *productService) AddProduct(ctx context.Context, body dto.ProductRequestBody) dto.ProductResponseBody {
 	// validate request payload body
 	validateBodyError := service.validate.Struct(&body)
-	utils.PanicIfError(validateBodyError)
+	helper.PanicIfError(validateBodyError)
 
 	tx, err := service.db.Begin()
 	exceptions.ErrorInternal(err)
-	defer utils.RollbackIfPanic(tx)
+	defer helper.RollbackIfPanic(tx)
 
 	random, err := uuid.NewRandom()
 	exceptions.ErrorInternal(err)
@@ -87,18 +98,18 @@ func (service *productService) AddProduct(ctx context.Context, body dto.ProductR
 func (service *productService) UpdateProduct(ctx context.Context, body dto.ProductRequestBody, param dto.ProductRequestParam) dto.ProductResponseBody {
 	// validate request payload body
 	validateBodyError := service.validate.Struct(&body)
-	utils.PanicIfError(validateBodyError)
+	helper.PanicIfError(validateBodyError)
 
 	// validate request parameter
 	validateParamError := service.validate.Struct(&param)
-	utils.PanicIfError(validateParamError)
+	helper.PanicIfError(validateParamError)
 
 	tx, err := service.db.Begin()
 	exceptions.ErrorInternal(err)
-	defer utils.RollbackIfPanic(tx)
+	defer helper.RollbackIfPanic(tx)
 
 	product, err := service.productRepository.FindById(ctx, tx, param.Id)
-	utils.PanicIfError(err)
+	helper.PanicIfError(err)
 	product.Item = body.Item
 	product.Price = body.Price
 	product.Quantity = body.Quantity
@@ -110,12 +121,12 @@ func (service *productService) UpdateProduct(ctx context.Context, body dto.Produ
 func (service *productService) RemoveProduct(ctx context.Context, param dto.ProductRequestParam) {
 	// validate request parameter
 	validateParamError := service.validate.Struct(&param)
-	utils.PanicIfError(validateParamError)
+	helper.PanicIfError(validateParamError)
 
 	tx, err := service.db.Begin()
 	exceptions.ErrorInternal(err)
-	defer utils.RollbackIfPanic(tx)
+	defer helper.RollbackIfPanic(tx)
 
 	errDelete := service.productRepository.Delete(ctx, tx, param.Id)
-	utils.PanicIfError(errDelete)
+	helper.PanicIfError(errDelete)
 }

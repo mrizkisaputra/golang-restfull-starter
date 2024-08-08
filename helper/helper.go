@@ -1,7 +1,8 @@
-package utils
+package helper
 
 import (
 	"database/sql"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -26,5 +27,17 @@ func RollbackIfPanic(tx *sql.Tx) {
 	} else {
 		err := tx.Commit()
 		PanicIfError(err)
+	}
+}
+
+func CloseDB(db *sql.DB, Log *logrus.Logger) {
+	if err := db.Close(); err != nil {
+		Log.Errorf("close database error : %v", err)
+	}
+}
+
+func CloseQuery(rows *sql.Rows, log *logrus.Logger) {
+	if err := rows.Close(); err != nil {
+		log.Errorf("Error closing rows: %s", err)
 	}
 }
